@@ -1,46 +1,40 @@
-# Backend — Google Apps Script
+# Inventario sincronizado
 
-## Hojas en Google Sheets
+## Fórmula
 
-| Hoja | Columnas |
-|------|----------|
-| `productos` | id, nombre, foto, stock_actual, stock_minimo, unidad, categoria, area |
-| `movimientos` | fecha, usuario, producto, cambio, nota, producto_id |
-| `usuarios` | usuario, pin, rol |
-
-## Despliegue
-
-1. Abre tu Google Sheet → **Extensiones** → **Apps Script**.
-2. Pega el contenido de `Code.gs` (reemplaza o fusiona con tu script actual).
-3. **Implementar** → **Nueva implementación** → Tipo: **Aplicación web**.
-4. Ejecutar como: **Yo** · Acceso: **Cualquiera**.
-5. Copia la URL y actualízala en `src/api.js` si cambió.
-
-## Endpoints
-
-### GET
-
-- `?action=productos` — lista de productos (compatible con la app anterior)
-- `?action=usuarios` — lista `{ usuario, rol }` (sin PIN)
-- `?action=movimientos` — historial ordenado del más reciente al más antiguo
-
-### POST
-
-```json
-{ "action": "login", "usuario": "Ana", "pin": "1234" }
+```
+stock_actual = redondear(stock_operativo / contenido_por_unidad, 2 decimales)
 ```
 
-Respuesta: `{ "ok": true, "usuario": "Ana", "rol": "cocina" }` o `{ "ok": false, "error": "..." }`
+**stock_operativo** = fuente física real (g, ml, piezas)  
+**stock_actual** = unidades comerciales (bolsas, litros fraccionados)
 
-```json
-{
-  "action": "movimiento",
-  "producto_id": "1",
-  "producto": "Aceite",
-  "cambio": -2,
-  "nota": "merma",
-  "usuario": "Ana"
-}
+## productos
+
+`contenido_por_unidad` · `unidad_operativa` · `stock_operativo` · `stock_actual` · `unidad` · …
+
+## Flujo único (`mutarInventario_`)
+
+1. `delta_operativo` → `actualizarStockOperativo_` (solo escribe operativo)
+2. `recalcularStockActual_` (único lugar que escribe `stock_actual`)
+
+## Movimiento manual
+
+```
+delta_operativo = cambio_comercial × contenido_por_unidad
+mutarInventario_(delta_operativo)
 ```
 
-Respuesta: `{ "ok": true, "nuevo_stock": 8 }`
+Historial guarda `+1`, `-0.5` (comercial). Inventario siempre en operativo.
+
+## Ventas
+
+```
+mutarInventario_(-cantidad_receta × cantidad_venta)
+```
+
+Misma arquitectura que movimientos manuales.
+
+## GET productos
+
+Sincroniza todas las filas en hoja antes de responder (corrige desfases previos).

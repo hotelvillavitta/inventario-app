@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { esBajoStock } from "../utils";
+import { esBajoStock, formatStockActual } from "../utils";
 
 const QUICK_ADD = [1, 5, 10];
 const QUICK_SUB = [1, 5, 10];
@@ -14,7 +14,7 @@ export default function ProductCard({ producto, onMover, moviendo }) {
   };
 
   const aplicarManual = (entrada) => {
-    const n = Math.abs(parseInt(cantidadManual, 10));
+    const n = Math.abs(parseFloat(cantidadManual, 10));
     if (!n || Number.isNaN(n)) return;
     aplicar(entrada ? n : -n);
   };
@@ -49,9 +49,19 @@ export default function ProductCard({ producto, onMover, moviendo }) {
           {producto.unidad ? <span>{producto.unidad}</span> : null}
         </div>
 
-        <div className="inv-stock-row">
-          <span className="inv-stock-row__label">Stock actual</span>
-          <span className="inv-stock-row__value">{producto.stock_actual}</span>
+        <div className="inv-stock-block">
+          <div className="inv-stock-row">
+            <span className="inv-stock-row__value">
+              {formatStockActual(producto.stock_actual)}
+              {producto.unidad ? (
+                <span className="inv-stock-row__unit"> {producto.unidad}</span>
+              ) : null}
+            </span>
+          </div>
+          <p className="inv-stock-row__op">
+            {producto.stock_operativo ?? 0}
+            {producto.unidad_operativa ? ` ${producto.unidad_operativa}` : ""}
+          </p>
         </div>
         {producto.stock_minimo != null && producto.stock_minimo !== "" ? (
           <p className="inv-stock-row__min">Mínimo: {producto.stock_minimo}</p>
@@ -88,8 +98,9 @@ export default function ProductCard({ producto, onMover, moviendo }) {
         <div className="inv-manual">
           <input
             type="number"
-            inputMode="numeric"
-            min={1}
+            inputMode="decimal"
+            step="0.01"
+            min={0.01}
             className="inv-manual__input"
             value={cantidadManual}
             onChange={(e) => setCantidadManual(e.target.value)}

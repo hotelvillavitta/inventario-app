@@ -1,5 +1,5 @@
 export const API_URL =
-  "https://script.google.com/macros/s/AKfycbyQUNsOi3zfZM8DbrPVCdePw0V45YCdlY22COiaibyHdMVuf7ovUQGUrbiOASpeq8lbiQ/exec";
+  "https://script.google.com/macros/s/AKfycbxer0t-tZMEMDKaYi90tNV77LBmRAX9Rt5RJMLyiH3kQLjZHVqOKbVRsX6kgZisHLMa/exec";
 
 async function parseJson(res) {
   const data = await res.json();
@@ -29,6 +29,14 @@ export async function login(usuario, pin) {
   const res = await fetch(API_URL, {
     method: "POST",
     body: JSON.stringify({ action: "login", usuario, pin }),
+  });
+  return parseJson(res);
+}
+
+export async function procesarVentas(usuario) {
+  const res = await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({ action: "procesar_ventas", usuario }),
   });
   return parseJson(res);
 }

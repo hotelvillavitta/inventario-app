@@ -1,7 +1,13 @@
 import { useMemo } from "react";
 import { contarCategorias, esBajoStock, esHoy } from "../utils";
 
-export default function Dashboard({ productos, movimientos, onIrInventario }) {
+export default function Dashboard({
+  productos,
+  movimientos,
+  onIrInventario,
+  onProcesarVentas,
+  procesandoVentas,
+}) {
   const bajos = useMemo(
     () => productos.filter(esBajoStock),
     [productos]
@@ -19,6 +25,28 @@ export default function Dashboard({ productos, movimientos, onIrInventario }) {
 
   return (
     <div className="inv-page">
+      <section className="inv-sales-panel">
+        <div className="inv-sales-panel__info">
+          <h2>Ventas Square</h2>
+          <p>Descuenta ingredientes según recetas y registra movimientos.</p>
+        </div>
+        <button
+          type="button"
+          className="inv-sales-panel__btn"
+          onClick={onProcesarVentas}
+          disabled={procesandoVentas}
+        >
+          {procesandoVentas ? (
+            <>
+              <span className="inv-spinner inv-spinner--sm" aria-hidden />
+              Procesando…
+            </>
+          ) : (
+            "Procesar ventas"
+          )}
+        </button>
+      </section>
+
       <section className="inv-dash-cards">
         <div className="inv-dash-card">
           <span className="inv-dash-card__value">{productos.length}</span>

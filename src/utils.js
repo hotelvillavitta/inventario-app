@@ -43,3 +43,20 @@ export function contarCategorias(productos) {
   });
   return set.size;
 }
+
+/** Máximo 2 decimales para stock comercial */
+export function formatStockActual(valor) {
+  const n = Number(valor);
+  if (Number.isNaN(n)) return "0";
+  return String(Number(n.toFixed(2)));
+}
+
+/** Misma fórmula que Apps Script: movimiento manual en unidades comerciales */
+export function stocksTrasMovimientoComercial(producto, cambioComercial) {
+  const contenido = Number(producto.contenido_por_unidad) || 0;
+  if (contenido <= 0) return null;
+  const deltaOp = Number(cambioComercial) * contenido;
+  const stock_operativo = (Number(producto.stock_operativo) || 0) + deltaOp;
+  const stock_actual = Math.round((stock_operativo / contenido) * 100) / 100;
+  return { stock_actual, stock_operativo };
+}
