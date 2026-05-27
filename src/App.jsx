@@ -5,30 +5,49 @@ import {
   procesarVentas,
   registrarMovimiento,
 } from "./api";
+
 import BottomNav from "./components/BottomNav";
 import Dashboard from "./components/Dashboard";
 import Historial from "./components/Historial";
 import InventarioView from "./components/InventarioView";
 import Login from "./components/Login";
 import Toast from "./components/Toast";
-import { clearSession, getSession, saveSession } from "./session";
+
+import {
+  clearSession,
+  getSession,
+  saveSession,
+} from "./session";
+
 import { stocksTrasMovimientoComercial } from "./utils";
+
 import "./App.css";
 
 export default function App() {
+
   const [session, setSession] = useState(() => getSession());
+
   const [vista, setVista] = useState("dashboard");
+
   const [productos, setProductos] = useState([]);
+
   const [movimientos, setMovimientos] = useState([]);
+
   const [cargando, setCargando] = useState(false);
+
   const [moviendoId, setMoviendoId] = useState(null);
-  const [procesandoVentas, setProcesandoVentas] = useState(false);
+
+  const [procesandoVentas, setProcesandoVentas] =
+    useState(false);
+
   const [toast, setToast] = useState(null);
 
   const cargarDatos = useCallback(async () => {
+
     setCargando(true);
 
     try {
+
       const [prods, movs] = await Promise.all([
         fetchProductos(),
         fetchMovimientos().catch(() => []),
@@ -38,32 +57,45 @@ export default function App() {
       setMovimientos(movs);
 
     } catch {
+
       setToast({
-        message: "No se pudo cargar el inventario. Revisa la conexión.",
+        message:
+          "No se pudo cargar el inventario. Revisa la conexión.",
         type: "error",
       });
 
     } finally {
+
       setCargando(false);
     }
+
   }, []);
 
   useEffect(() => {
+
     if (session) {
       cargarDatos();
     }
+
   }, [session, cargarDatos]);
 
   const handleLogin = (userSession) => {
+
     saveSession(userSession);
+
     setSession(userSession);
   };
 
   const handleLogout = () => {
+
     clearSession();
+
     setSession(null);
+
     setProductos([]);
+
     setMovimientos([]);
+
     setVista("dashboard");
   };
 
@@ -99,14 +131,17 @@ export default function App() {
             }
 
             if (desdeApi) {
+
               return {
                 ...p,
                 stock_actual: resultado.nuevo_stock,
-                stock_operativo: resultado.nuevo_stock_operativo,
+                stock_operativo:
+                  resultado.nuevo_stock_operativo,
               };
             }
 
             if (calculado) {
+
               return {
                 ...p,
                 ...calculado,
@@ -130,7 +165,7 @@ export default function App() {
           ...prev,
         ]);
 
-        // 🔥 REFRESCO AUTOMÁTICO REAL
+        // 🔥 refresco real desde Sheets
         await cargarDatos();
 
       } catch (err) {
@@ -143,6 +178,7 @@ export default function App() {
         });
 
       } finally {
+
         setMoviendoId(null);
       }
     },
@@ -159,11 +195,12 @@ export default function App() {
 
       const res = await procesarVentas(session.usuario);
 
-      // 🔥 REFRESCAR INVENTARIO E HISTORIAL
+      // 🔥 refrescar inventario e historial
       await cargarDatos();
 
       setToast({
-        message: `${res.ventas_procesadas ?? 0} ventas procesadas`,
+        message:
+          `${res.ventas_procesadas ?? 0} ventas procesadas`,
         type: "success",
       });
 
@@ -171,13 +208,16 @@ export default function App() {
 
       setToast({
         message:
-          err.message || "Error al procesar ventas.",
+          err.message ||
+          "Error al procesar ventas.",
         type: "error",
       });
 
     } finally {
+
       setProcesandoVentas(false);
     }
+
   }, [session, procesandoVentas, cargarDatos]);
 
   if (!session) {
@@ -188,26 +228,53 @@ export default function App() {
 
     return (
       <div className="inv-app inv-app--main">
+
         <div className="inv-loading">
-          <div className="inv-spinner" aria-hidden />
+
+          <div
+            className="inv-spinner"
+            aria-hidden
+          />
+
           <p>Cargando inventario…</p>
+
         </div>
+
       </div>
     );
   }
 
   return (
+
     <div className="inv-app inv-app--main">
 
       <header className="inv-topbar">
 
         <div className="inv-topbar__title">
-          <h1>Inventario Villa Vitta</h1>
 
-          <p className="inv-topbar__user">
-            {session.usuario}
-            {session.rol ? ` · ${session.rol}` : ""}
-          </p>
+          <div className="inv-brand">
+
+            <img
+              src="/logo.png"
+              alt="Villa Vitta"
+              className="inv-brand__logo"
+            />
+
+            <div>
+
+              <h1>Inventario Villa Vitta</h1>
+
+              <p className="inv-topbar__user">
+                {session.usuario}
+                {session.rol
+                  ? ` · ${session.rol}`
+                  : ""}
+              </p>
+
+            </div>
+
+          </div>
+
         </div>
 
         <button
@@ -224,7 +291,9 @@ export default function App() {
         <Dashboard
           productos={productos}
           movimientos={movimientos}
-          onIrInventario={() => setVista("inventario")}
+          onIrInventario={() =>
+            setVista("inventario")
+          }
           onProcesarVentas={handleProcesarVentas}
           procesandoVentas={procesandoVentas}
         />

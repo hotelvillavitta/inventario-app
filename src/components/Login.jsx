@@ -60,11 +60,19 @@ export default function Login({ onSuccess }) {
   return (
     <div className="inv-app inv-app--login">
       <div className="inv-login">
-        <div className="inv-login__brand">
-          <span className="inv-login__logo">VV</span>
-          <h1>Inventario Villa Vitta</h1>
-          <p>Ingresa con tu PIN para continuar</p>
-        </div>
+      <div className="inv-login__brand">
+
+<img
+  src="/logo.png"
+  alt="Villa Vitta"
+  className="inv-login__logo"
+/>
+
+<h1>Inventario Villa Vitta</h1>
+
+<p>Ingresa con tu PIN para continuar</p>
+
+</div>
 
         <form className="inv-login__form" onSubmit={handleSubmit}>
           <label className="inv-login__label">

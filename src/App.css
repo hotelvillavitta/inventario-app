@@ -631,17 +631,12 @@
 }
 
 .inv-login__logo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 64px;
-  height: 64px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, var(--inv-accent), #6366f1);
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: #fff;
-  margin-bottom: 16px;
+  width: 260px;
+  height: auto;
+  object-fit: contain;
+  border-radius: 28px;
+  margin-bottom: 22px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.18);
 }
 
 .inv-login__brand h1 {
@@ -1029,4 +1024,16 @@
 .inv-sales-panel__btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+.inv-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.inv-brand__logo {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+  border-radius: 14px;
 }
