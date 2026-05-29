@@ -1,5 +1,5 @@
 export const API_URL =
-  "https://script.google.com/macros/s/AKfycbyEY8gzskN5_S_JhppO7JmSM5jsIZF1YitxlN_R2O_BH5f86i4lA3RNVv7aUTCFkyOkZQ/exec";
+  "https://script.google.com/macros/library/d/1_kWhq-fZcByCr_XtQBMzR0QQem8JPRnJguBYVE1w22LRhqmoAl47Nvo4/11";
 
 async function parseJson(res) {
   const data = await res.json();
