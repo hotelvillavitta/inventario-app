@@ -255,7 +255,7 @@ export default function App() {
           <div className="inv-brand">
 
             <img
-              src="/logo.png"
+              src="/app-icon.png"
               alt="Villa Vitta"
               className="inv-brand__logo"
             />
