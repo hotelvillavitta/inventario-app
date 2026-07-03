@@ -202,9 +202,11 @@ export default function App() {
       setToast({
         message:
           (res.ventas_procesadas ?? 0) > 0
-            ? `${res.ventas_procesadas} ventas procesadas`
-            : res.resumen ||
-              `${res.ventas_procesadas ?? 0} ventas procesadas`,
+            ? `${res.ventas_procesadas} ventas procesadas` +
+              (res.sincronizacion ? ` (${res.sincronizacion})` : "")
+            : res.sincronizacion
+              ? `0 ventas procesadas. Sync: ${res.sincronizacion}`
+              : `${res.ventas_procesadas ?? 0} ventas procesadas`,
         type: (res.ventas_procesadas ?? 0) > 0 ? "success" : "error",
       });
 

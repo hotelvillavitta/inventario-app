@@ -29,11 +29,14 @@ Historial guarda `+1`, `-0.5` (comercial). Inventario siempre en operativo.
 
 ## Ventas
 
-```
-mutarInventario_(-cantidad_receta × cantidad_venta)
-```
+Flujo al pulsar **Procesar ventas** (o el horario automático):
 
-Misma arquitectura que movimientos manuales.
+1. **`sincronizarVentasExternas()`** — copia ventas nuevas desde la hoja externa Square (`VENTAS`) → `ventas_square` (por `OrderID`, sin duplicar).
+2. **`procesarVentas_()`** — para filas con `procesado` vacío, busca receta por `platillo`, descuenta `stock_operativo` y marca `procesado = Sí`.
+
+Hoja externa (ID en `VENTAS_EXTERNAS_SPREADSHEET_ID`): pestaña **`VENTAS`**.
+
+Columnas esperadas en ambas hojas (mismo orden): Fecha, Producto, Cantidad, Total, Tipo, OrderID, Modificadores.
 
 ### Horario automático (procesar ventas)
 
