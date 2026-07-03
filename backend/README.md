@@ -35,6 +35,29 @@ mutarInventario_(-cantidad_receta × cantidad_venta)
 
 Misma arquitectura que movimientos manuales.
 
+### Horario automático (procesar ventas)
+
+El horario está en un **archivo aparte** (`HorarioVentas.gs`) para no tocar `Code.gs` ni romper la app web.
+
+**Archivos en Apps Script:**
+
+| Archivo | Contenido |
+|---------|-----------|
+| `Code.gs` | Backend completo (`doGet`, `doPost`, inventario, ventas) — **no modificar** salvo bugs |
+| `HorarioVentas.gs` | Trigger cada hora + menú **Inventario** en la hoja |
+
+**Pasos para recuperar la app y activar el horario:**
+
+1. En Apps Script, abre `Code.gs` y pega **todo** el contenido de `backend/Code.gs` (debe empezar con `function doGet`).
+2. Crea un archivo nuevo **HorarioVentas** y pega `backend/HorarioVentas.gs`.
+3. **Guardar** → **Implementar → Administrar implementaciones → Editar → Nueva versión → Implementar**.
+4. Recarga la app React: el inventario debe cargar.
+5. En la hoja: **Inventario → Instalar horario procesar ventas** (cada hora, configurado en `HorarioVentas.gs`).
+
+Configuración en `HorarioVentas.gs` (`VENTAS_AUTO_TIPO = "cada_horas"`, `VENTAS_AUTO_CADA_HORAS = 1`).
+
+Si la app dice "falta doGet", pegaste solo parte del código o no creaste nueva versión del despliegue.
+
 ## GET productos
 
 Sincroniza todas las filas en hoja antes de responder (corrige desfases previos).

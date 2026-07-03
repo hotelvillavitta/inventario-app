@@ -56,10 +56,11 @@ export default function App() {
       setProductos(prods);
       setMovimientos(movs);
 
-    } catch {
+    } catch (err) {
 
       setToast({
         message:
+          err?.message ||
           "No se pudo cargar el inventario. Revisa la conexión.",
         type: "error",
       });
@@ -200,8 +201,11 @@ export default function App() {
 
       setToast({
         message:
-          `${res.ventas_procesadas ?? 0} ventas procesadas`,
-        type: "success",
+          (res.ventas_procesadas ?? 0) > 0
+            ? `${res.ventas_procesadas} ventas procesadas`
+            : res.resumen ||
+              `${res.ventas_procesadas ?? 0} ventas procesadas`,
+        type: (res.ventas_procesadas ?? 0) > 0 ? "success" : "error",
       });
 
     } catch (err) {

@@ -1,7 +1,20 @@
 export const API_URL =
 "https://script.google.com/macros/s/AKfycbwfWC-lfvpPk_mgTd_apK033IoWJoXJOQfuAVt3rJrodV54ZeUw6YOUeEYLigcfbulmhw/exec";
-  async function parseJson(res) {
-  const data = await res.json();
+async function parseJson(res) {
+  const text = await res.text();
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    if (/doGet|doPost/i.test(text)) {
+      throw new Error(
+        "El backend no responde: falta doGet/doPost en Apps Script. Pega todo Code.gs y vuelve a desplegar la app web."
+      );
+    }
+    throw new Error(
+      "Respuesta inválida del servidor. Revisa que la app web esté desplegada y accesible."
+    );
+  }
   if (data?.error) throw new Error(data.error);
   return data;
 }

@@ -487,18 +487,78 @@ function logVentasProcesadas_(orderId, producto, cantidad) {
   ]);
 }
 
+function buildResumenProcesarVentas_(ventasProcesadas, detalle) {
+  if (ventasProcesadas > 0) return "";
+
+  if (detalle.filas_en_hoja === 0) {
+    return "No hay filas de venta en ventas_square.";
+  }
+
+  if (detalle.ya_procesadas === detalle.filas_en_hoja) {
+    return (
+      "Todas las ventas ya estaban procesadas (columna procesado = Sí). " +
+      "Si hay ventas nuevas, verifica que Square las agregó a la hoja."
+    );
+  }
+
+  var partes = [];
+  if (detalle.sin_receta > 0) {
+    partes.push(
+      detalle.sin_receta +
+        " sin receta (Producto en ventas_square debe coincidir con platillo en recetas; revisa columna error)"
+    );
+  }
+  if (detalle.sin_ingredientes > 0) {
+    partes.push(
+      detalle.sin_ingredientes +
+        " con receta pero sin ingredientes válidos (revisa ingrediente_id en recetas)"
+    );
+  }
+  if (detalle.con_error > 0) {
+    partes.push(detalle.con_error + " con error (revisa columna error)");
+  }
+  if (detalle.sin_producto > 0) {
+    partes.push(detalle.sin_producto + " sin nombre de producto");
+  }
+  if (detalle.ya_procesadas > 0) {
+    partes.push(detalle.ya_procesadas + " ya procesadas");
+  }
+
+  if (partes.length === 0) {
+    return "0 ventas procesadas. Revisa la hoja ventas_square.";
+  }
+
+  return "0 ventas procesadas: " + partes.join("; ") + ".";
+}
+
 function procesarVentas_(data) {
   var usuario = String(data.usuario || "Sistema Square");
   var ventasProcesadas = 0;
   var movimientosGenerados = 0;
+  var detalle = {
+    filas_en_hoja: 0,
+    ya_procesadas: 0,
+    sin_producto: 0,
+    sin_receta: 0,
+    sin_ingredientes: 0,
+    con_error: 0,
+  };
 
   ensureVentasProcesadasSheet_();
 
   var sheetVentas = getSheet_("ventas_square");
   var values = sheetVentas.getDataRange().getValues();
   if (values.length < 2) {
-    return { ok: true, ventas_procesadas: 0, movimientos_generados: 0 };
+    return {
+      ok: true,
+      ventas_procesadas: 0,
+      movimientos_generados: 0,
+      detalle: detalle,
+      resumen: buildResumenProcesarVentas_(0, detalle),
+    };
   }
+
+  detalle.filas_en_hoja = values.length - 1;
 
   var headers = values[0].map(normalizeHeader_);
   var colProcesado = colIndex_(headers, ["procesado"]);
@@ -506,7 +566,7 @@ function procesarVentas_(data) {
   var colError = colIndex_(headers, ["error"]);
   var colProducto = colIndex_(headers, ["producto"]);
   var colCantidad = colIndex_(headers, ["cantidad"]);
-  var colOrderId = colIndex_(headers, ["orderid"]);
+  var colOrderId = colIndex_(headers, ["orderid", "order_id"]);
 
   if (colProducto === -1) throw new Error('Columna "Producto" no encontrada en ventas_square');
 
@@ -516,10 +576,16 @@ function procesarVentas_(data) {
   for (var i = 1; i < values.length; i++) {
     var row = values[i];
 
-    if (colProcesado !== -1 && esSi_(row[colProcesado])) continue;
+    if (colProcesado !== -1 && esSi_(row[colProcesado])) {
+      detalle.ya_procesadas++;
+      continue;
+    }
 
     var productoVenta = String(row[colProducto] || "").trim();
-    if (!productoVenta) continue;
+    if (!productoVenta) {
+      detalle.sin_producto++;
+      continue;
+    }
 
     var cantidadVenta = colCantidad !== -1 ? Number(row[colCantidad]) : 1;
     if (isNaN(cantidadVenta) || cantidadVenta <= 0) cantidadVenta = 1;
@@ -530,6 +596,7 @@ function procesarVentas_(data) {
     try {
       var recetaItems = recetasPorPlatillo[normalizeNombre_(productoVenta)];
       if (!recetaItems || recetaItems.length === 0) {
+        detalle.sin_receta++;
         if (colError !== -1) {
           sheetVentas.getRange(sheetRow, colError + 1).setValue("Sin receta para: " + productoVenta);
         }
@@ -547,6 +614,7 @@ function procesarVentas_(data) {
       );
 
       if (movs === 0) {
+        detalle.sin_ingredientes++;
         if (colError !== -1) {
           sheetVentas.getRange(sheetRow, colError + 1).setValue("Receta sin ingredientes válidos");
         }
@@ -567,6 +635,7 @@ function procesarVentas_(data) {
       ventasProcesadas++;
       movimientosGenerados += movs;
     } catch (err) {
+      detalle.con_error++;
       if (colError !== -1) {
         sheetVentas.getRange(sheetRow, colError + 1).setValue(String(err.message || err));
       }
@@ -576,6 +645,8 @@ function procesarVentas_(data) {
   return {
     ok: true,
     ventas_procesadas: ventasProcesadas,
-    movimientos_generados: movimientosGenerados
+    movimientos_generados: movimientosGenerados,
+    detalle: detalle,
+    resumen: buildResumenProcesarVentas_(ventasProcesadas, detalle),
   };
 }
